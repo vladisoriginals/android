@@ -9,20 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.text.NumberFormat;
 
 public class MainActivity extends AppCompatActivity {
+    int numberOfCoffees = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
-
-    /**
-     * This method is called when the order button is clicked.
-     */
-    public void submitOrder(View view) {
-            display(2);
-            displayPrice(2*5);
-    }
-
     /**
      * This method displays the given quantity value on the screen.
      */
@@ -34,8 +26,29 @@ public class MainActivity extends AppCompatActivity {
     /**
      * This method displays the given price on the screen.
      */
-    private void displayPrice(int number) {
+    private void displayPrice(String number) {
         TextView priceTextView = findViewById(R.id.tv_price);
         priceTextView.setText(NumberFormat.getCurrencyInstance().format(number));
     }
+    private void displayMessage(String message){
+        TextView priceTextView = findViewById(R.id.tv_price);
+        priceTextView.setText(message);
+    }
+    /**
+     * This method is called when the order button is clicked.
+     */
+    public void submitOrder(View view) {
+        String priceMessage = "Total: "+numberOfCoffees*5+"$\n";
+        String thank = "Thank you!";
+        displayMessage(priceMessage+thank);
+    }
+    public void increment(View view){
+        numberOfCoffees=numberOfCoffees+1;
+        display(numberOfCoffees);
+    }
+    public void decrement(View view){
+        numberOfCoffees=numberOfCoffees-1;
+        display(numberOfCoffees<=0?numberOfCoffees=0:numberOfCoffees);
+
+       }
 }
