@@ -15,10 +15,11 @@ import java.net.URL;
 import static android.example.vkinfo.utils.NetworkUtils.generateURL;
 import static android.example.vkinfo.utils.NetworkUtils.getResponseFromURL;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     private EditText searchField;
     private Button searchButton;
     private TextView result;
+
 
     class VKQueryTask extends AsyncTask<URL, Void, String> {
 
@@ -47,17 +48,12 @@ public class MainActivity extends AppCompatActivity {
         searchField = findViewById(R.id.et_search_field);
         searchButton = findViewById(R.id.b_search_vk);
         result = findViewById(R.id.tv_result);
-
-        View.OnClickListener onClickListener = new View.OnClickListener() {
+        searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 URL generateURL = generateURL(searchField.getText().toString());
                 new VKQueryTask().execute(generateURL);
-                }
-        };
-
-
-        searchButton.setOnClickListener(onClickListener);
-
+            }
+        });
     }
 }

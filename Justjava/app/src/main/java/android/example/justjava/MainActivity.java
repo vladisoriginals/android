@@ -19,19 +19,20 @@ public class MainActivity extends AppCompatActivity {
             quantityTextView.setText("" + number);
 
     }
-    private int calculatePrice(int quantity){
+    private int calculatePrice(){
         int price = quantity * 5;
         return price;
     }
     private void displayMessage(String message){
-        TextView priceTextView = findViewById(R.id.tv_price);
-        priceTextView.setText(message);
+        TextView orderSummary = findViewById(R.id.tv_order_summary);
+        orderSummary.setText(message);
     }
 
     public void submitOrder(View view) {
-        String priceMessage = "Total: "+calculatePrice(quantity)+"$\n";
+        String name = "Vlad Stashevsky\n";
+        String priceMessage = "Total: "+calculatePrice()+"$\n";
         String thank = "Thank you!";
-        displayMessage(priceMessage+thank);
+        displayMessage(name+priceMessage+thank);
     }
     public void increment(View view){
         quantity=quantity+1;

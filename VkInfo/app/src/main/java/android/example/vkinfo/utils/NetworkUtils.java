@@ -13,7 +13,7 @@ public class NetworkUtils {
     private static final String VK_API_BASE_URL ="https://api.vk.com/";
     private static final String VK_USERS_GET = "method/users.get";
     private static final String PARAM_USER_ID = "user_ids";
-    private static final String PARAM_VERSION = "V";
+    private static final String PARAM_VERSION = "v";
     private static final String ACCESS_TOKEN ="access_token";
     public static URL generateURL(String userId){
         Uri builtUri = Uri.parse(VK_API_BASE_URL+VK_USERS_GET)
