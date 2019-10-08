@@ -3,4 +3,7 @@
     <string name="id_vk">Введите id в VK</string>
     <string name="search">Search</string>
     <string name="Result">Результат поиска</string>
+
+    <string name="error_message">Произошла ошибка, попробуйте ещё раз</string>
+    <string name="token">acbd23e9acbd23e9acbd23e966acd1ed6baacbdacbd23e9f1c53602b74469d3f9a5774e</string>
 </resources>
