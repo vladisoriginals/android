@@ -57,8 +57,8 @@ public class MainActivity extends AppCompatActivity{
 
         @Override
         protected void onPostExecute(String response) {
-            String firstName = null;
-            String lastName = null;
+            String firstName;
+            String lastName;
             if (response != null && !response.equals("")) {
                 try {
                     JSONObject jsonResponse = new JSONObject(response);

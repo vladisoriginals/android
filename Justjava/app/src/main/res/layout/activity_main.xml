@@ -1,18 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:context=".MainActivity">
+    <EditText
+        android:id="@+id/et_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/name"
+        android:inputType="textMultiLine"
+        android:textSize="25sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"/>
+    <TextView
+        style="@style/CustomText"
+        android:id="@+id/tv_toppings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/toppings" />
+    <CheckBox
+        android:id="@+id/cb_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/whipped_cream"
+        android:padding="24dp"
+        android:textSize="30sp"
+        android:layout_marginStart="16dp" />
+    <CheckBox
+        android:id="@+id/cb_chocolate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chocolate"
+        android:textSize="30sp"
+        android:paddingStart="24sp"
+        android:layout_marginStart="16dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Quantity"
-        android:textAllCaps="true"
-        android:padding="16dp"
-        android:textSize="30sp"/>
+        android:text="@string/quantity"
+        style="@style/CustomText"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,34 +77,16 @@
             android:paddingTop="2dp"
             android:onClick="increment"/>
 </LinearLayout>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="order summary"
-        android:textAllCaps="true"
-        android:textSize="30sp"
-        android:paddingStart="16dp"
-        android:paddingTop="16dp"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="$0"
-        android:id="@+id/tv_order_summary"
-        android:textSize="30sp"
-        android:textColor="@android:color/black"
-        android:paddingStart="16dp"
-        android:paddingTop="16dp"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="order"
+        android:text="@string/order"
         android:onClick="submitOrder"
         android:textAllCaps="true"
         android:textSize="30sp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"/>
 
-
-
 </LinearLayout>
+</ScrollView>
