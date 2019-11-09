@@ -43,9 +43,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.thread) {
-            Context context = MainActivity.this;
-            Class ThreadsActivity = ThreadsActivity.class;
-            startActivity(new Intent(context, ThreadsActivity));
+            startActivity(new Intent(MainActivity.this, ThreadsActivity.class));
             return true;
         } else {
             return super.onOptionsItemSelected(item);

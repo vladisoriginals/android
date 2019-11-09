@@ -7,7 +7,7 @@ import android.os.SystemClock;
 public class SimpleAsyncTask {
     private TaskEvent.Lifecycle listener;
     private Thread mBackgroundThread;
-    boolean isCanceled = false;
+    boolean isCanceled= false;
 
     public SimpleAsyncTask(TaskEvent.Lifecycle listener){
         this.listener = listener;
@@ -38,25 +38,18 @@ public class SimpleAsyncTask {
     }
 
     public void execute(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        runOnUiThread(()->{
                 onPreExecute();
                 mBackgroundThread = new Thread("Handler_executor_thread"){
                     @Override
                     public void run() {
                         doInBackground();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                onPostExecute();
-                            }
-                        });
+                        runOnUiThread(()->onPostExecute());
                     }
                 };
                 mBackgroundThread.start();
             }
-        });
+        );
     }
 
     private void runOnUiThread(Runnable runnable){
@@ -65,12 +58,7 @@ public class SimpleAsyncTask {
     }
 
     private void publishProgress(final int progress){
-        Runnable runnable =new Runnable() {
-            @Override
-            public void run() {
-                onProgressUpdate(progress);
-            }
-        };
+        Runnable runnable =()->onProgressUpdate(progress);
         runOnUiThread(runnable);
     }
 

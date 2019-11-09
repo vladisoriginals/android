@@ -14,12 +14,13 @@ public class ThreadsActivity extends AppCompatActivity implements TaskEvent.Life
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.thread_activity);
 
         if (savedInstanceState == null) {
             CounterFragment fragment= CounterFragment.newInstance(getString(R.string.fragment_handler_exe_title));
             threadsFragment = fragment;
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, fragment)
+                    .replace(R.id.cont, fragment)
                     .addToBackStack(null)
                     .commit();
         }
