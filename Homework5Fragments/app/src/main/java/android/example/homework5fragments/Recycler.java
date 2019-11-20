@@ -43,9 +43,7 @@ public class Recycler extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.moviesList);
         movies = DataMovies.getMovieList();
-        AdapterMovies adapterMovies = new AdapterMovies(new ClickListener() {
-            @Override
-            public void onClick(int position) {
+        AdapterMovies adapterMovies = new AdapterMovies((int position)-> {
                 Movies movie = movies.get(position);
                 FragmentManager fragmentManager = getFragmentManager();
                 FragmentTransaction fragmentTransaction = null;
@@ -60,7 +58,7 @@ public class Recycler extends Fragment {
                 fragmentTransaction.replace(R.id.container, fragmentDetails);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
-            }
+
         }, movies);
         recyclerView.setAdapter(adapterMovies);
     }

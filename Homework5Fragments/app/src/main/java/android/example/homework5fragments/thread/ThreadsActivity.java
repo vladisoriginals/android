@@ -2,15 +2,18 @@ package android.example.homework5fragments.thread;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.example.homework5fragments.R;
 import android.os.Bundle;
 import android.widget.Toast;
 
-public class ThreadsActivity extends AppCompatActivity implements TaskEvent.Lifecycle,TaskEvent.Operation {
+public class ThreadsActivity extends AppCompatActivity implements TaskEvent.Operation {
 
-    private SimpleAsyncTask task;
     private CounterFragment threadsFragment;
+    private ThreadsViewModel viewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,73 +23,34 @@ public class ThreadsActivity extends AppCompatActivity implements TaskEvent.Life
             CounterFragment fragment= CounterFragment.newInstance(getString(R.string.fragment_handler_exe_title));
             threadsFragment = fragment;
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.cont, fragment)
+                    .replace(R.id.cont, fragment, FRAGMENT_TAG)
                     .addToBackStack(null)
                     .commit();
+        }else{
+            threadsFragment = (CounterFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
         }
+        viewModel = new ViewModelProvider(this, new ThreadViewModelFactory(this))
+                .get(ThreadsViewModel.class);
+        LiveData<String> text = viewModel.getStringMutableLiveData();
+        text.observe(this,(String s)-> threadsFragment.updateFragmentText(s)
+
+        );
     }
 
     @Override
     public void createTask() {
-        Toast.makeText(this, getString(R.string.msg_thread_oncreate), Toast.LENGTH_SHORT).show();
-        task = new SimpleAsyncTask(this);
+        viewModel.onCreateTask();
     }
 
     @Override
     public void startTask() {
-        SimpleAsyncTask taskCopy = task;
-        if (taskCopy == null || taskCopy.isCanceled){
-            Toast.makeText(this, R.string.msg_should_create_task, Toast.LENGTH_SHORT).show();
-        }else {
-            Toast.makeText(this, getString(R.string.msg_thread_onstart), Toast.LENGTH_SHORT).show();
-            task.execute();
-        }
+        viewModel.onStartTask();
     }
 
     @Override
     public void cancelTask() {
-        if (task == null) {
-            Toast.makeText(this, R.string.msg_should_create_task, Toast.LENGTH_SHORT).show();
-        } else {
-            task.cancel();
-        }
-
+        viewModel.onCancelTask();
     }
 
-    @Override
-    public void onPreExecute() {
-        Toast.makeText(this, getString(R.string.msg_preexecute), Toast.LENGTH_SHORT).show();
-
-        threadsFragment.updateFragmentText(getString(R.string.task_created));
-    }
-
-    @Override
-    public void onPostExecute() {
-        Toast.makeText(this, getString(R.string.msg_postexecute), Toast.LENGTH_SHORT).show();
-
-        threadsFragment.updateFragmentText(getString(R.string.done));
-        task = null;
-
-    }
-
-    @Override
-    public void onProgressUpdate(int progress) {
-        threadsFragment.updateFragmentText(String.valueOf(progress));
-
-    }
-
-    @Override
-    public void onCancel() {
-        Toast.makeText(this, getString(R.string.msg_thread_oncancel), Toast.LENGTH_SHORT).show();
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (task!=null){
-            task.cancel();
-            task = null;
-        }
-        super.onDestroy();
-    }
+    private static final String FRAGMENT_TAG ="fragment_tag";
 }
