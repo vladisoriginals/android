@@ -1,8 +1,5 @@
 package android.example.vkinfo.utils;
 
-import android.content.Context;
-import android.example.vkinfo.MainActivity;
-import android.example.vkinfo.R;
 import android.net.Uri;
 
 import java.io.IOException;
@@ -39,6 +36,7 @@ public class NetworkUtils {
 
     public static String getResponseFromURL(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestMethod("GET");
         try {
 
             InputStream in = urlConnection.getInputStream();

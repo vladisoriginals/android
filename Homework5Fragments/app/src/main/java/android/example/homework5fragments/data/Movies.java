@@ -1,39 +1,42 @@
 package android.example.homework5fragments.data;
 
-import androidx.annotation.DrawableRes;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Movies implements Serializable {
 
+
+
+    private final  int id;
     private final String title;
-    @DrawableRes
-    private final int posterRes;
-    @DrawableRes
-    private final int backdropRes;
+    private final String posterRes;
+    private final String backdropRes;
     private final String overview;
     private final String releasedDate;
-    private final String trailerUrl;
 
-    public Movies(String title, int posterRes, int backdropRes, String overview,
-                  String releasedDate, String trailerUrl) {
+    public Movies(int id, String title, String posterRes, String backdropRes, String overview,
+                  String releasedDate) {
+        this.id = id;
         this.title = title;
         this.posterRes = posterRes;
         this.backdropRes = backdropRes;
         this.overview = overview;
         this.releasedDate = releasedDate;
-        this.trailerUrl = trailerUrl;
     }
 
+    public int getId() {
+        return id;
+    }
     public String getTitle() {
         return title;
     }
 
-    public int getPosterRes() {
+    public String getPosterRes() {
         return posterRes;
     }
 
-    public int getBackdropRes() {
+    public String getBackdropRes() {
         return backdropRes;
     }
 
@@ -45,7 +48,21 @@ public class Movies implements Serializable {
         return releasedDate;
     }
 
-    public String getTrailerUrl() {
-        return trailerUrl;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Movies movies = (Movies) o;
+        return id == movies.id &&
+                title.equals(movies.title) &&
+                posterRes.equals(movies.posterRes) &&
+                backdropRes.equals(movies.backdropRes) &&
+                overview.equals(movies.overview) &&
+                releasedDate.equals(movies.releasedDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, posterRes, backdropRes, overview, releasedDate);
     }
 }

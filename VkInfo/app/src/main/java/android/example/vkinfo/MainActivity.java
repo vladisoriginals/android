@@ -1,8 +1,5 @@
 package android.example.vkinfo;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.example.vkinfo.utils.NetworkUtils;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -10,6 +7,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,6 +26,8 @@ public class MainActivity extends AppCompatActivity{
     private TextView result;
     private TextView errorMessage;
     private ProgressBar progressBar;
+
+    private Dependencies dependencies = Dependencies.getINSTANCE();
 
     private void showResultTextView(){
         result.setVisibility(View.VISIBLE);
@@ -102,5 +103,7 @@ public class MainActivity extends AppCompatActivity{
                 new VKQueryTask().execute(generateURL);
             }
         });
+
+        dependencies.provideUtils().getRandomStringWithRandomNumber();
     }
 }

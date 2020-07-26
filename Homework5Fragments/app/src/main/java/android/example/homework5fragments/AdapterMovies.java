@@ -1,6 +1,5 @@
 package android.example.homework5fragments;
 
-import android.content.Context;
 import android.example.homework5fragments.data.Movies;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,26 +8,37 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class AdapterMovies  extends RecyclerView.Adapter<AdapterMovies.MovieHolder>{
+import coil.Coil;
+import coil.DefaultRequestOptions;
+import coil.request.LoadRequest;
+import coil.request.LoadRequestBuilder;
+
+public class AdapterMovies extends RecyclerView.Adapter<AdapterMovies.MovieHolder> {
+    @Nullable
     private ClickListener clickListener;
+    @Nullable
     private List<Movies> movies;
 
-    public  AdapterMovies(ClickListener clickListener, List<Movies> movies){
+    public AdapterMovies(@NonNull ClickListener clickListener) {
         this.clickListener = clickListener;
-        this.movies = movies;
     }
+
+    public void updateList(@NonNull List<Movies> moviesList) {
+        this.movies = moviesList;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     //происходим создание viewHolder
     public MovieHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        int itemMovies = R.layout.item_movies;
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(itemMovies, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_movies, parent, false);
         return new MovieHolder(view);
     }
 
@@ -40,9 +50,11 @@ public class AdapterMovies  extends RecyclerView.Adapter<AdapterMovies.MovieHold
 
     @Override
     public int getItemCount() {
+        if (movies == null) return 0;
         return movies.size();
     }
-    public Movies getItem(int position){
+
+    public Movies getItem(int position) {
         return movies.get(position);
     }
 
@@ -61,9 +73,19 @@ public class AdapterMovies  extends RecyclerView.Adapter<AdapterMovies.MovieHold
             overview = itemView.findViewById(R.id.overview);
             itemView.setOnClickListener(this);
         }
+
         //bind Заполняет viewHolder новым значением
-        void bind(Movies movies){
-            poster.setImageResource(movies.getPosterRes());
+        void bind(Movies movies) {
+            LoadRequestBuilder builder =
+                    new LoadRequestBuilder(itemView.getContext(), new DefaultRequestOptions());
+
+            LoadRequest request = builder
+                    .data(movies.getPosterRes())
+                    .target(poster)
+                    .build();
+
+            Coil.loader().load(request);
+
             title.setText(movies.getTitle());
             overview.setText(movies.getOverview());
         }
@@ -71,7 +93,7 @@ public class AdapterMovies  extends RecyclerView.Adapter<AdapterMovies.MovieHold
         @Override
         public void onClick(View view) {
             int position = getAdapterPosition();
-            clickListener.onClick(position);
+            clickListener.onClick(movies.get(position));
 
         }
     }
