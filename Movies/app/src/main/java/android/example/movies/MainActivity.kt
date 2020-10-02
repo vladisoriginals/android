@@ -1,28 +1,19 @@
 package android.example.movies
 
-import android.example.movies.databinding.ActivityMainBinding
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
-import androidx.navigation.ui.NavigationUI.*
+import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
+class MainActivity: AppCompatActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
-        val navController = findNavController(R.id.nav_host_fragment)
-        setupActionBarWithNavController(this, navController)
+        setupActionBarWithNavController(this, findNavController(R.id.nav_host_fragment))
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = this.findNavController(R.id.nav_host_fragment)
-        return navController.navigateUp()
+        return findNavController(R.id.nav_host_fragment).navigateUp()
     }
 }
 
