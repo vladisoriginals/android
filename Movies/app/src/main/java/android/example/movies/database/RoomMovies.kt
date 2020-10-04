@@ -2,16 +2,16 @@ package android.example.movies.database
 
 import android.content.Context
 import androidx.room.*
-import kotlinx.coroutines.flow.Flow
+import io.reactivex.rxjava3.core.Observable
 
 @Dao
 interface MoviesDao {
 
     @Query("SELECT * FROM databasemovies")
-    fun getMovies(): Flow<List<DatabaseMovies>>
+    fun getMovies(): Observable<List<DatabaseMovies>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(movies: List<DatabaseMovies>)
+    fun insertAll(movies: List<DatabaseMovies>)
 
 }
 
@@ -19,10 +19,10 @@ interface MoviesDao {
 interface TrailerDao {
 
     @Query("SELECT * FROM databasetrailer WHERE ID = :movieId")
-    fun getTrailerByMovieId(movieId: Int): Flow<DatabaseTrailer?>
+    fun getTrailerByMovieId(movieId: Int): Observable<DatabaseTrailer>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertURL(trailer: DatabaseTrailer)
+    fun insertURL(trailer: DatabaseTrailer)
 
 }
 

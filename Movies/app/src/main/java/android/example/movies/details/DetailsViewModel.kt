@@ -6,39 +6,46 @@ import android.example.movies.domain.Video
 import android.example.movies.repository.MoviesRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.kotlin.withLatestFrom
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import io.reactivex.rxjava3.subjects.PublishSubject
 
 class DetailsViewModel(
     private val movieId: Int,
     app: Application
 ) : ViewModel() {
 
+    private val disposable = CompositeDisposable()
     private val repository = MoviesRepository(MoviesDatabase.getInstance(app))
-    private val viewState = MutableStateFlow<Video?>(null)
-    private val launchTrailerEvent = BroadcastChannel<Unit>(1)
+    private val viewState = BehaviorSubject.create<Video>()
+    private val launchTrailerEvent = PublishSubject.create<Unit>()
 
-    val trailerUrl: Flow<String> = trailerFlow()
+    val trailerUrl: Observable<String> = trailerFlow()
 
     init {
-        viewModelScope.launch {
-            repository.fetchTrailer(movieId).collect { viewState.value = it }
-        }
-        viewModelScope.launch {
-            repository.getTrailerFromNetwork(movieId)
-        }
+        repository.fetchTrailer(movieId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { viewState.onNext(it) }
+            .addTo(disposable)
+        repository.getTrailerFromNetwork(movieId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe()
+            .addTo(disposable)
     }
 
     fun launchTrailer() {
-        launchTrailerEvent.offer(Unit)
+        launchTrailerEvent.onNext(Unit)
     }
 
-    private fun trailerFlow(): Flow<String> {
-        return launchTrailerEvent.asFlow()
-            .map { viewState.value }
-            .filterNotNull()
+    private fun trailerFlow(): Observable<String> {
+        return launchTrailerEvent.withLatestFrom(viewState) { _, state -> state }
             .map { it.url }
     }
 

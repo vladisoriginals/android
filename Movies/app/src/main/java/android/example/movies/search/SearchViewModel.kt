@@ -5,34 +5,45 @@ import android.example.movies.database.MoviesDatabase
 import android.example.movies.domain.Movie
 import android.example.movies.repository.MoviesRepository
 import androidx.lifecycle.*
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import java.io.IOException
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.kotlin.subscribeBy
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val disposable = CompositeDisposable()
     private val repository = MoviesRepository(MoviesDatabase.getInstance(application))
     private val _movies = MutableLiveData<List<Movie>>()
-    private val _error = BroadcastChannel<Unit>(1)
+    private val _error = PublishSubject.create<Unit>()
 
     val movies: LiveData<List<Movie>> = _movies
-    val error: Flow<Unit> = _error.asFlow()
+    val error: Observable<Unit> = _error
 
     init {
-        viewModelScope.launch {
-            repository.movies.collect { _movies.value = it }
-        }
-        viewModelScope.launch {
-            try {
-                repository.refreshMovies()
-            } catch (network: IOException) {
-                println(network.localizedMessage)
-                _error.send(Unit)
-            }
-        }
+        repository.movies
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { _movies.value = it }
+            .addTo(disposable)
+        repository.refreshMovies()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onError = {
+                    println(it.localizedMessage)
+                    _error.onNext(Unit)
+                }
+            )
+            .addTo(disposable)
+    }
+
+    override fun onCleared() {
+        disposable.clear()
+        super.onCleared()
     }
 
     class Factory(val app: Application) : ViewModelProvider.Factory {

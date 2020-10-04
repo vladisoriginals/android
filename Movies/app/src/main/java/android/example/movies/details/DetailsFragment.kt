@@ -9,14 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import coil.api.load
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
 
 class DetailsFragment : Fragment() {
 
+    private val disposable = CompositeDisposable()
     private val viewModel: DetailsViewModel by viewModels {
         DetailsViewModel.Factory(args.movie.id, requireActivity().application)
     }
@@ -29,6 +29,11 @@ class DetailsFragment : Fragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        disposable.clear()
+        super.onDestroyView()
+    }
+
     private fun initView(binding: FragmentDetailsBinding) = with(binding) {
         val movie = args.movie
         imageView.load(movie.posterPath)
@@ -39,9 +44,7 @@ class DetailsFragment : Fragment() {
     }
 
     private fun initViewModel() = with(viewModel) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            trailerUrl.collect { openMovieTrailer(it) }
-        }
+        trailerUrl.subscribe(::openMovieTrailer).addTo(disposable)
     }
 
     private fun openMovieTrailer(url: String) {

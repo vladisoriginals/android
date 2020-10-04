@@ -10,13 +10,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.kotlin.addTo
 
 class SearchFragment : Fragment() {
 
+    private val disposable = CompositeDisposable()
     private val adapter = AdapterMovies(::onItemClick)
     private val viewModel: SearchViewModel by viewModels {
         SearchViewModel.Factory(requireActivity().application)
@@ -32,9 +32,12 @@ class SearchFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.error.collect { showNetworkError() }
-        }
+        viewModel.error.subscribe { showNetworkError() }.addTo(disposable)
+    }
+
+    override fun onDestroyView() {
+        disposable.clear()
+        super.onDestroyView()
     }
 
     private fun onItemClick(movie: Movie) {

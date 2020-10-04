@@ -5,31 +5,39 @@ import android.example.movies.database.DatabaseTrailer
 import android.example.movies.database.MoviesDatabase
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
-import android.example.movies.network.MoviesNetwork
-import android.example.movies.network.asDatabaseMovies
-import android.example.movies.network.toMovieTrailerEntity
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
+import android.example.movies.network.*
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Observable
 
 class MoviesRepository(private val databaseMovies: MoviesDatabase) {
 
-    val movies: Flow<List<Movie>> = databaseMovies.moviesDao.getMovies().map { it.asDomainModel() }
+    val movies: Observable<List<Movie>> = databaseMovies.moviesDao.getMovies().map { it.asDomainModel() }
 
-    fun fetchTrailer(movieId: Int): Flow<Video> {
+    fun fetchTrailer(movieId: Int): Observable<Video> {
         return databaseMovies.trailerDao.getTrailerByMovieId(movieId)
-            .filterNotNull()
             .map { it.asDomainModel() }
     }
 
-    suspend fun refreshMovies() {
-        val moviesContainer = MoviesNetwork.retrofitService.getPopularMoviesAsync().await()
-        databaseMovies.moviesDao.insertAll(moviesContainer.asDatabaseMovies())
+    fun refreshMovies(): Completable {
+        return MoviesNetwork.retrofitService.getPopularMoviesAsync()
+            .flatMapCompletable(::insertMoviesInDb)
     }
 
-    suspend fun getTrailerFromNetwork(movieId: Int) {
-        val trailer = MoviesNetwork.retrofitService.getMovieVideosAsync(movieId).await()
-        databaseMovies.trailerDao.insertURL(trailer.toMovieTrailerEntity())
+    fun getTrailerFromNetwork(movieId: Int): Completable {
+        return MoviesNetwork.retrofitService.getMovieVideosAsync(movieId)
+            .flatMapCompletable(::insertURLInDb)
+    }
+
+    private fun insertMoviesInDb(movies: NetworkContainerMovies): Completable {
+        return Completable.fromAction {
+            databaseMovies.moviesDao.insertAll(movies.asDatabaseMovies())
+        }
+    }
+
+    private fun insertURLInDb(video: NetworkContainerVideos): Completable {
+        return Completable.fromAction {
+            databaseMovies.trailerDao.insertURL(video.toMovieTrailerEntity())
+        }
     }
 
     private fun List<DatabaseMovies>.asDomainModel(): List<Movie>{
