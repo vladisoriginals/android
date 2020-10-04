@@ -8,11 +8,9 @@ import android.example.movies.domain.Video
 import android.example.movies.network.MoviesNetwork
 import android.example.movies.network.asDatabaseMovies
 import android.example.movies.network.toMovieTrailerEntity
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 
 class MoviesRepository(private val databaseMovies: MoviesDatabase) {
 
@@ -25,18 +23,13 @@ class MoviesRepository(private val databaseMovies: MoviesDatabase) {
     }
 
     suspend fun refreshMovies() {
-        withContext(Dispatchers.IO) {
-            val moviesContainer = MoviesNetwork.retrofitService.getPopularMoviesAsync().await()
-            databaseMovies.moviesDao.insertAll(moviesContainer.asDatabaseMovies())
-        }
-
+        val moviesContainer = MoviesNetwork.retrofitService.getPopularMoviesAsync().await()
+        databaseMovies.moviesDao.insertAll(moviesContainer.asDatabaseMovies())
     }
 
     suspend fun getTrailerFromNetwork(movie: Movie) {
-        withContext(Dispatchers.IO) {
-            val trailer = MoviesNetwork.retrofitService.getMovieVideosAsync(movie.id).await()
-            databaseMovies.trailerDao.insertURL(trailer.toMovieTrailerEntity())
-        }
+        val trailer = MoviesNetwork.retrofitService.getMovieVideosAsync(movie.id).await()
+        databaseMovies.trailerDao.insertURL(trailer.toMovieTrailerEntity())
     }
 
     private fun List<DatabaseMovies>.asDomainModel(): List<Movie>{

@@ -11,7 +11,7 @@ interface MoviesDao {
     fun getMovies(): Flow<List<DatabaseMovies>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(movies: List<DatabaseMovies>)
+    suspend fun insertAll(movies: List<DatabaseMovies>)
 
 }
 
@@ -22,7 +22,7 @@ interface TrailerDao {
     fun getTrailerByMovieId(movieId: Int): Flow<DatabaseTrailer?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertURL(trailer: DatabaseTrailer)
+    suspend fun insertURL(trailer: DatabaseTrailer)
 
 }
 
