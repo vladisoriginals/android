@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 class DetailsFragment : Fragment() {
 
     private val viewModel: DetailsViewModel by viewModels {
-        DetailsViewModel.Factory(args.movie, requireActivity().application)
+        DetailsViewModel.Factory(args.movie.id, requireActivity().application)
     }
     private val args: DetailsFragmentArgs by navArgs()
 

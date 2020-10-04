@@ -2,16 +2,17 @@ package android.example.movies.details
 
 import android.app.Application
 import android.example.movies.database.MoviesDatabase
-import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
 import android.example.movies.repository.MoviesRepository
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class DetailsViewModel(
-    private val movie: Movie,
+    private val movieId: Int,
     app: Application
 ) : ViewModel() {
 
@@ -23,10 +24,10 @@ class DetailsViewModel(
 
     init {
         viewModelScope.launch {
-            repository.fetchTrailer(movie.id).collect { viewState.value = it }
+            repository.fetchTrailer(movieId).collect { viewState.value = it }
         }
         viewModelScope.launch {
-            repository.getTrailerFromNetwork(movie)
+            repository.getTrailerFromNetwork(movieId)
         }
     }
 
@@ -41,11 +42,14 @@ class DetailsViewModel(
             .map { it.url }
     }
 
-    class Factory(val movie: Movie, val app: Application) : ViewModelProvider.Factory {
+    class Factory(
+        private val movieId: Int,
+        private val app: Application
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(DetailsViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return DetailsViewModel(movie, app) as T
+                return DetailsViewModel(movieId, app) as T
             }
             throw IllegalArgumentException("Unable to construct viewmodel")
         }

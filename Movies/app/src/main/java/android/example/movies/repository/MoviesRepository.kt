@@ -27,8 +27,8 @@ class MoviesRepository(private val databaseMovies: MoviesDatabase) {
         databaseMovies.moviesDao.insertAll(moviesContainer.asDatabaseMovies())
     }
 
-    suspend fun getTrailerFromNetwork(movie: Movie) {
-        val trailer = MoviesNetwork.retrofitService.getMovieVideosAsync(movie.id).await()
+    suspend fun getTrailerFromNetwork(movieId: Int) {
+        val trailer = MoviesNetwork.retrofitService.getMovieVideosAsync(movieId).await()
         databaseMovies.trailerDao.insertURL(trailer.toMovieTrailerEntity())
     }
 
