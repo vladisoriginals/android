@@ -14,7 +14,7 @@ interface BindableAdapter<T> {
 }
 
 class AdapterMovies(
-    private val clickListener: MoviesListener
+    private val clickListener: (Movie) -> Unit
 ) : ListAdapter<Movie, AdapterMovies.MovieHolder>(MoviesDiffCallback()), BindableAdapter<Movie> {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieHolder {
@@ -22,21 +22,24 @@ class AdapterMovies(
         return MovieHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: MovieHolder, position: Int) =
+    override fun onBindViewHolder(holder: MovieHolder, position: Int) {
         holder.bind(getItem(position), clickListener)
+    }
 
-    class MovieHolder(val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(movies: Movie, clickListener: MoviesListener) {
-            binding.apply {
-                this.clickListener = clickListener
-                this.movies = movies
-                ivPoster.load(movies.backdropPatch)
-                executePendingBindings()
+    override fun setData(data: List<Movie>) = submitList(data)
+
+    class MovieHolder(private val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(movie: Movie, clickListener: (Movie) -> Unit) {
+            with(binding) {
+                ivPoster.load(movie.backdropPatch)
+                tvNameOfFilm.text = movie.title
+                tvDate.text = movie.releaseDate
+                tvOverview.text = movie.overview
+                binding.root.setOnClickListener { clickListener.invoke(movie) }
             }
         }
     }
 
-    override fun setData(data: List<Movie>) = submitList(data)
 }
 
 class MoviesDiffCallback : DiffUtil.ItemCallback<Movie>() {
@@ -45,8 +48,4 @@ class MoviesDiffCallback : DiffUtil.ItemCallback<Movie>() {
 
     override fun areContentsTheSame(oldItem: Movie, newItem: Movie): Boolean =
         oldItem == newItem
-}
-
-class MoviesListener(val clickListener: (movie: Movie) -> Unit) {
-    fun onClick(movie: Movie) = clickListener(movie)
 }

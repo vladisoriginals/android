@@ -3,7 +3,6 @@ package android.example.movies.search
 import android.example.movies.databinding.FragmentSearchBinding
 import android.example.movies.domain.Movie
 import android.example.movies.utils.AdapterMovies
-import android.example.movies.utils.MoviesListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class SearchFragment : Fragment() {
 
-    private val adapter = AdapterMovies(MoviesListener(::onItemClick))
+    private val adapter = AdapterMovies(::onItemClick)
     private val viewModel: SearchViewModel by viewModels {
         SearchViewModel.Factory(requireActivity().application)
     }
