@@ -3,10 +3,17 @@ package android.example.movies.details
 import android.app.Application
 import android.example.movies.database.MoviesDatabase
 import android.example.movies.domain.Movie
+import android.example.movies.domain.Video
 import android.example.movies.repository.MoviesRepository
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class DetailsViewModel(
     private val movie: Movie,
@@ -14,12 +21,11 @@ class DetailsViewModel(
 ) : ViewModel() {
 
     private val repository = MoviesRepository(MoviesDatabase.getInstance(app))
-
-    val trailer = repository.getTrailer(movie)
-
-
     private val viewModelJob = SupervisorJob()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+
+    private val _trailer = MutableLiveData<Video>()
+    val trailer: LiveData<Video> = _trailer
 
 
     private fun getUrl() {
@@ -30,6 +36,9 @@ class DetailsViewModel(
     }
 
     init {
+        viewModelScope.launch {
+            repository.fetchTrailer(movie.id).collect { _trailer.value = it }
+        }
         getUrl()
     }
 

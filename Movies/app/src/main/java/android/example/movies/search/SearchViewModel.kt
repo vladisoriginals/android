@@ -2,22 +2,24 @@ package android.example.movies.search
 
 import android.app.Application
 import android.example.movies.database.MoviesDatabase
+import android.example.movies.domain.Movie
 import android.example.movies.repository.MoviesRepository
 import androidx.lifecycle.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.io.IOException
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MoviesRepository(MoviesDatabase.getInstance(application))
-
-    val movies = repository.movies
-
     private val viewModelJob = SupervisorJob()
     private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+
+    private val _movies = MutableLiveData<List<Movie>>()
+    val movies: LiveData<List<Movie>> = _movies
 
     private var _eventNetworkError = MutableLiveData<Boolean>()
     val eventNetworkError: LiveData<Boolean>
@@ -27,8 +29,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     val isNetworkErrorShown: LiveData<Boolean>
         get() = _isNetworkErrorShown
 
-
     init {
+        viewModelScope.launch {
+            repository.movies.collect { _movies.value = it }
+        }
         refreshDataFromRepository()
     }
 

@@ -1,15 +1,14 @@
 package android.example.movies.database
 
 import android.content.Context
-import android.example.movies.domain.Video
-import androidx.lifecycle.LiveData
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MoviesDao {
 
     @Query("SELECT * FROM databasemovies")
-    fun getMovies(): LiveData<List<DatabaseMovies>>
+    fun getMovies(): Flow<List<DatabaseMovies>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(movies: List<DatabaseMovies>)
@@ -20,7 +19,7 @@ interface MoviesDao {
 interface TrailerDao {
 
     @Query("SELECT * FROM databasetrailer WHERE ID = :movieId")
-    fun getTrailerByMovieId(movieId: Int): LiveData<DatabaseTrailer>
+    fun getTrailerByMovieId(movieId: Int): Flow<DatabaseTrailer?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertURL(trailer: DatabaseTrailer)

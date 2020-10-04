@@ -1,26 +1,28 @@
 package android.example.movies.repository
 
-import android.example.movies.database.*
+import android.example.movies.database.DatabaseMovies
+import android.example.movies.database.DatabaseTrailer
+import android.example.movies.database.MoviesDatabase
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
-import android.example.movies.network.*
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import android.example.movies.network.MoviesNetwork
+import android.example.movies.network.asDatabaseMovies
+import android.example.movies.network.toMovieTrailerEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class MoviesRepository(private val databaseMovies: MoviesDatabase) {
 
-    val movies: LiveData<List<Movie>> = Transformations.map(databaseMovies.moviesDao.getMovies()) {
-        it.asDomainModel()
-    }
+    val movies: Flow<List<Movie>> = databaseMovies.moviesDao.getMovies().map { it.asDomainModel() }
 
-    fun getTrailer(movie: Movie) : LiveData<Video> {
-        return Transformations.map((databaseMovies.trailerDao.getTrailerByMovieId(movie.id))) {
-               it.asDomainModel()
-           }
+    fun fetchTrailer(movieId: Int): Flow<Video> {
+        return databaseMovies.trailerDao.getTrailerByMovieId(movieId)
+            .filterNotNull()
+            .map { it.asDomainModel() }
     }
-
 
     suspend fun refreshMovies() {
         withContext(Dispatchers.IO) {
@@ -37,6 +39,19 @@ class MoviesRepository(private val databaseMovies: MoviesDatabase) {
         }
     }
 
+    private fun List<DatabaseMovies>.asDomainModel(): List<Movie>{
+        return map {
+            Movie(
+                id = it.id,
+                title = it.title,
+                releaseDate = it.releaseDate,
+                overview = it.overview,
+                posterPath = it.posterPath,
+                backdropPatch = it.posterPath
+            )
+        }
+    }
 
+    private fun DatabaseTrailer.asDomainModel(): Video = Video(id, url)
 
 }
