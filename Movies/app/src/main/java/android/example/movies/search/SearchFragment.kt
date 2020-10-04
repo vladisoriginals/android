@@ -9,10 +9,11 @@ import android.example.movies.databinding.FragmentSearchBinding
 import android.example.movies.utils.AdapterMovies
 import android.example.movies.utils.MoviesListener
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.observe
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class SearchFragment : Fragment() {
 
@@ -40,11 +41,8 @@ class SearchFragment : Fragment() {
 
         initMoviesList()
 
-        viewModel.eventNetworkError.observe(viewLifecycleOwner) {networkError ->
-            if (networkError) {
-                viewModel.onNetworkErrorShown()
-                onNetworkError()
-            }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.error.collect { showNetworkError() }
         }
 
         return binding.root
@@ -59,10 +57,7 @@ class SearchFragment : Fragment() {
         binding.listMovies.adapter = adapter
     }
 
-    private fun onNetworkError() {
-        if (viewModel.isNetworkErrorShown.value!!){
-            Toast.makeText(activity, "NetworkError", Toast.LENGTH_LONG).show()
-            viewModel.onNetworkErrorShown()
-        }
+    private fun showNetworkError() {
+        Toast.makeText(activity, "NetworkError", Toast.LENGTH_LONG).show()
     }
 }

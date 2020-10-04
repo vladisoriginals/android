@@ -5,9 +5,9 @@ import android.example.movies.database.MoviesDatabase
 import android.example.movies.domain.Movie
 import android.example.movies.repository.MoviesRepository
 import androidx.lifecycle.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -15,53 +15,25 @@ import java.io.IOException
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MoviesRepository(MoviesDatabase.getInstance(application))
-    private val viewModelJob = SupervisorJob()
-    private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
-
     private val _movies = MutableLiveData<List<Movie>>()
+    private val _error = BroadcastChannel<Unit>(1)
+
     val movies: LiveData<List<Movie>> = _movies
-
-    private var _eventNetworkError = MutableLiveData<Boolean>()
-    val eventNetworkError: LiveData<Boolean>
-        get() = _eventNetworkError
-
-    private var _isNetworkErrorShown = MutableLiveData<Boolean>()
-    val isNetworkErrorShown: LiveData<Boolean>
-        get() = _isNetworkErrorShown
+    val error: Flow<Unit> = _error.asFlow()
 
     init {
         viewModelScope.launch {
             repository.movies.collect { _movies.value = it }
         }
-        refreshDataFromRepository()
-    }
-
-    private fun refreshDataFromRepository() {
         viewModelScope.launch {
             try {
                 repository.refreshMovies()
-
-                _eventNetworkError.value = false
-                _isNetworkErrorShown.value = false
             } catch (network: IOException) {
                 println(network.localizedMessage)
-                _eventNetworkError.value = true
+                _error.send(Unit)
             }
         }
     }
-
-    fun onNetworkErrorShown() {
-        _isNetworkErrorShown.value = true
-    }
-
-
-    override fun onCleared() {
-        super.onCleared()
-        viewModelJob.cancel()
-    }
-
-
-
 
     class Factory(val app: Application) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -72,4 +44,5 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             throw IllegalArgumentException("Unable to construct viewmodel")
         }
     }
+
 }
