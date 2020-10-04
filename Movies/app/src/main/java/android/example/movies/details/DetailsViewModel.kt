@@ -6,7 +6,8 @@ import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
 import android.example.movies.repository.MoviesRepository
 import androidx.lifecycle.*
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class DetailsViewModel(
@@ -15,16 +16,29 @@ class DetailsViewModel(
 ) : ViewModel() {
 
     private val repository = MoviesRepository(MoviesDatabase.getInstance(app))
-    private val _trailer = MutableLiveData<Video>()
-    val trailer: LiveData<Video> = _trailer
+    private val viewState = MutableStateFlow<Video?>(null)
+    private val launchTrailerEvent = BroadcastChannel<Unit>(1)
+
+    val trailerUrl: Flow<String> = trailerFlow()
 
     init {
         viewModelScope.launch {
-            repository.fetchTrailer(movie.id).collect { _trailer.value = it }
+            repository.fetchTrailer(movie.id).collect { viewState.value = it }
         }
         viewModelScope.launch {
             repository.getTrailerFromNetwork(movie)
         }
+    }
+
+    fun launchTrailer() {
+        launchTrailerEvent.offer(Unit)
+    }
+
+    private fun trailerFlow(): Flow<String> {
+        return launchTrailerEvent.asFlow()
+            .map { viewState.value }
+            .filterNotNull()
+            .map { it.url }
     }
 
     class Factory(val movie: Movie, val app: Application) : ViewModelProvider.Factory {
@@ -36,4 +50,5 @@ class DetailsViewModel(
             throw IllegalArgumentException("Unable to construct viewmodel")
         }
     }
+
 }
