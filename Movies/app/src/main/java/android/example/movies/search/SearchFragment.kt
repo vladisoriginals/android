@@ -13,11 +13,13 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
+import io.reactivex.disposables.CompositeDisposable
 
 class SearchFragment : Fragment() {
 
     private lateinit var adapter: AdapterMovies
     private lateinit var binding: FragmentSearchBinding
+    private val disposeBag = CompositeDisposable()
 
     private val viewModel: SearchViewModel by lazy {
         val activity = requireNotNull(this.activity) {
@@ -40,12 +42,10 @@ class SearchFragment : Fragment() {
 
         initMoviesList()
 
-        viewModel.eventNetworkError.observe(viewLifecycleOwner) {networkError ->
-            if (networkError) {
-                viewModel.onNetworkErrorShown()
-                onNetworkError()
-            }
+        val dispose =  viewModel.error.subscribe {
+            Toast.makeText(requireContext(), "Network error", Toast.LENGTH_LONG).show()
         }
+        disposeBag.add(dispose)
 
         return binding.root
     }
@@ -59,10 +59,9 @@ class SearchFragment : Fragment() {
         binding.listMovies.adapter = adapter
     }
 
-    private fun onNetworkError() {
-        if (viewModel.isNetworkErrorShown.value!!){
-            Toast.makeText(activity, "NetworkError", Toast.LENGTH_LONG).show()
-            viewModel.onNetworkErrorShown()
-        }
+
+    override fun onDestroyView() {
+        disposeBag.clear()
+        super.onDestroyView()
     }
 }

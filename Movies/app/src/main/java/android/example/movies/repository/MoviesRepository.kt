@@ -4,39 +4,49 @@ import android.example.movies.database.*
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
 import android.example.movies.network.*
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.reactivex.Completable
+import io.reactivex.Observable
+
 
 class MoviesRepository(private val databaseMovies: MoviesDatabase) {
 
-    val movies: LiveData<List<Movie>> = Transformations.map(databaseMovies.moviesDao.getMovies()) {
-        it.asDomainModel()
+    val movies: Observable<List<Movie>>? = databaseMovies.moviesDao.getMovies().map{
+         it.asDomainModel()
     }
 
-    fun getTrailer(movie: Movie) : LiveData<Video> {
-        return Transformations.map((databaseMovies.trailerDao.getTrailerByMovieId(movie.id))) {
-               it.asDomainModel()
-           }
+    fun getTrailer(movie: Movie): Observable<Video> {
+        return databaseMovies.trailerDao.getTrailerByMovieId(movie.id).map {
+            it.asDomainModel()
+        }
     }
 
 
-    suspend fun refreshMovies() {
-        withContext(Dispatchers.IO) {
-            val moviesContainer = MoviesNetwork.retrofitService.getPopularMoviesAsync().await()
-            databaseMovies.moviesDao.insertAll(moviesContainer.asDatabaseMovies())
+    fun refreshMovies(): Completable {
+        return MoviesNetwork.retrofitService.getPopularMoviesAsync().flatMapCompletable {
+            fromCompletableMovies(it)
+
         }
 
     }
 
-    suspend fun getTrailerFromNetwork(movie: Movie) {
-        withContext(Dispatchers.IO) {
-            val trailer = MoviesNetwork.retrofitService.getMovieVideosAsync(movie.id).await()
-            databaseMovies.trailerDao.insertURL(trailer.toMovieTrailerEntity())
+    fun fromCompletableMovies(networkContainerMovies: NetworkContainerMovies): Completable{
+        return Completable.fromAction{
+            databaseMovies.moviesDao.insertAll(networkContainerMovies.asDatabaseMovies())
         }
     }
 
+    fun getTrailerFromNetwork(movie: Movie): Completable {
+
+        return MoviesNetwork.retrofitService.getMovieVideosAsync(movie.id).flatMapCompletable {
+                   fromCompletableTrailer(it)
+        }
+    }
+
+    fun fromCompletableTrailer(networkContainerVideos: NetworkContainerVideos): Completable{
+        return Completable.fromAction {
+            databaseMovies.trailerDao.insertURL(networkContainerVideos.toMovieTrailerEntity())
+        }
+    }
 
 
 }
