@@ -2,8 +2,19 @@ package android.example.movies.search
 
 import android.app.Application
 import android.example.movies.database.MoviesDatabase
+import android.example.movies.domain.Movie
 import android.example.movies.repository.MoviesRepository
 import androidx.lifecycle.*
+import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.internal.util.HalfSerializer.onNext
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,22 +25,30 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     private val repository = MoviesRepository(MoviesDatabase.getInstance(application))
 
-    val movies = repository.movies
+    private val _movies = MutableLiveData<List<Movie>>()
+    val movies: LiveData<List<Movie>> = _movies
 
-    private val viewModelJob = SupervisorJob()
-    private val viewModelScope = CoroutineScope(viewModelJob + Dispatchers.Main)
-
-    private var _eventNetworkError = MutableLiveData<Boolean>()
-    val eventNetworkError: LiveData<Boolean>
-        get() = _eventNetworkError
-
-    private var _isNetworkErrorShown = MutableLiveData<Boolean>()
-    val isNetworkErrorShown: LiveData<Boolean>
-        get() = _isNetworkErrorShown
+    private val _error = PublishSubject.create<Unit>()
+    val error: Observable<Unit> = _error
+    private val disposeBag = CompositeDisposable()
 
 
     init {
-        refreshDataFromRepository()
+        val disposeMovie = repository.movies?.subscribeOn(Schedulers.io())
+             ?.observeOn(AndroidSchedulers.mainThread())
+             ?.subscribe({
+                 _movies.value = it
+             },{
+                 println(it.localizedMessage)
+                 _error.onNext(Unit)
+             })
+        val disposeRefreshMovie = repository.refreshMovies()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(onError = {_error.onNext(Unit)})
+
+        disposeBag.add(disposeMovie!!)
+        disposeBag.add(disposeRefreshMovie)
     }
 
     private fun refreshDataFromRepository() {
@@ -37,27 +56,19 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 repository.refreshMovies()
 
-                _eventNetworkError.value = false
-                _isNetworkErrorShown.value = false
             } catch (network: IOException) {
                 println(network.localizedMessage)
-                _eventNetworkError.value = true
+
+
             }
         }
     }
 
-    fun onNetworkErrorShown() {
-        _isNetworkErrorShown.value = true
-    }
-
 
     override fun onCleared() {
+        disposeBag.clear()
         super.onCleared()
-        viewModelJob.cancel()
     }
-
-
-
 
     class Factory(val app: Application) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {

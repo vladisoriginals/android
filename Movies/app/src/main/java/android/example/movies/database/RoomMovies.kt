@@ -4,12 +4,13 @@ import android.content.Context
 import android.example.movies.domain.Video
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import io.reactivex.Observable
 
 @Dao
 interface MoviesDao {
 
     @Query("SELECT * FROM databasemovies")
-    fun getMovies(): LiveData<List<DatabaseMovies>>
+    fun getMovies(): Observable<List<DatabaseMovies>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(movies: List<DatabaseMovies>)
@@ -20,7 +21,7 @@ interface MoviesDao {
 interface TrailerDao {
 
     @Query("SELECT * FROM databasetrailer WHERE ID = :movieId")
-    fun getTrailerByMovieId(movieId: Int): LiveData<DatabaseTrailer>
+    fun getTrailerByMovieId(movieId: Int): Observable<DatabaseTrailer>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertURL(trailer: DatabaseTrailer)
