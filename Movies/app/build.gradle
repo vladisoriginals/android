@@ -103,6 +103,14 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
     implementation "androidx.room:room-rxjava2:2.2.5"
 
+    //Koin
+    implementation "org.koin:koin-android:2.1.6"
+    implementation "org.koin:koin-core:2.1.6"
+    implementation "org.koin:koin-androidx-viewmodel:2.1.6"
+    implementation "org.koin:koin-androidx-fragment:2.1.6"
+
+
+
 
 
 

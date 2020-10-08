@@ -1,31 +1,25 @@
 package android.example.movies.details
 
 import android.app.Application
-import android.example.movies.database.MoviesDatabase
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
 import android.example.movies.repository.MoviesRepository
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
-import kotlinx.coroutines.*
 
 class DetailsViewModel(
-    movie: Movie,
-    app: Application
+    repository: MoviesRepository,
+    movie: Movie
 ) : ViewModel() {
 
-    private val repository = MoviesRepository(MoviesDatabase.getInstance(app))
-
-    private val _trailer = MutableLiveData<Video>()
-    val trailer: LiveData<Video> = _trailer
+    private val _trailer = BehaviorSubject.create<Video>()
+    val trailer: Observable<Video> = _trailer
 
     private val _error = PublishSubject.create<Unit>()
     val error: Observable<Unit> = _error
@@ -42,7 +36,7 @@ class DetailsViewModel(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                _trailer.value = it
+                _trailer.onNext(it)
             },{
                 _error.onNext(Unit)
             })
@@ -55,14 +49,4 @@ class DetailsViewModel(
         super.onCleared()
     }
 
-
-    class Factory(val movie: Movie, val app: Application) : ViewModelProvider.Factory {
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(DetailsViewModel::class.java)) {
-                @Suppress("UNCHECKED_CAST")
-                return DetailsViewModel(movie, app) as T
-            }
-            throw IllegalArgumentException("Unable to construct viewmodel")
-        }
-    }
 }

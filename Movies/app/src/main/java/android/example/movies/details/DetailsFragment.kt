@@ -1,28 +1,28 @@
 package android.example.movies.details
 
 import android.content.Intent
-import android.example.movies.R
 import android.example.movies.databinding.FragmentDetailsBinding
-import android.example.movies.domain.Movie
-import android.example.movies.search.SearchViewModel
+import android.example.movies.domain.Video
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.observe
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.navArgs
 import coil.api.load
 import io.reactivex.disposables.CompositeDisposable
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class DetailsFragment : Fragment() {
 
-    private lateinit var viewModel: DetailsViewModel
+
     private val disposeBag = CompositeDisposable()
+    private lateinit var trailer: Video
+    private val args: DetailsFragmentArgs by navArgs()
+    private val viewModelDetails: DetailsViewModel by viewModel{ parametersOf(args.movie)}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,14 +31,12 @@ class DetailsFragment : Fragment() {
         // Inflate the layout for this fragment
         val binding = FragmentDetailsBinding.inflate(inflater)
 
-        val args = DetailsFragmentArgs.fromBundle(requireArguments())
         val movie = args.movie
 
-        viewModel = ViewModelProviders.of(
-            this,
-            DetailsViewModel.Factory(movie, requireActivity().application)
-        )
-            .get(DetailsViewModel::class.java)
+        val disposeTrailer = viewModelDetails.trailer
+            .subscribe {
+                trailer = it
+            }
 
         binding.apply {
             imageView.load(movie.posterPath)
@@ -46,17 +44,17 @@ class DetailsFragment : Fragment() {
             tvDateDetails.text = movie.releaseDate
             tvOverviewDetails.text = movie.overview
             bTrailer.setOnClickListener {
-                viewModel.trailer.observe(viewLifecycleOwner) { trailer ->
                     openMovieTrailer(trailer.url)
                 }
             }
 
-        }
 
-        val dispose = viewModel.error.subscribe{
+
+        val dispose = viewModelDetails.error.subscribe{
             Toast.makeText(requireContext(), "Network error", Toast.LENGTH_LONG).show()
         }
         disposeBag.add(dispose)
+        disposeBag.add(disposeTrailer)
 
         return binding.root
     }

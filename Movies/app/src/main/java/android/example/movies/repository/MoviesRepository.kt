@@ -8,7 +8,7 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 
 
-class MoviesRepository(private val databaseMovies: MoviesDatabase) {
+class MoviesRepository(private val databaseMovies: MoviesDatabase, private val moviesApiService: MoviesApiService) {
 
     val movies: Observable<List<Movie>>? = databaseMovies.moviesDao.getMovies().map{
          it.asDomainModel()
@@ -22,14 +22,14 @@ class MoviesRepository(private val databaseMovies: MoviesDatabase) {
 
 
     fun refreshMovies(): Completable {
-        return MoviesNetwork.retrofitService.getPopularMoviesAsync().flatMapCompletable {
+        return moviesApiService.getPopularMoviesAsync().flatMapCompletable {
             fromCompletableMovies(it)
 
         }
 
     }
 
-    fun fromCompletableMovies(networkContainerMovies: NetworkContainerMovies): Completable{
+    private fun fromCompletableMovies(networkContainerMovies: NetworkContainerMovies): Completable{
         return Completable.fromAction{
             databaseMovies.moviesDao.insertAll(networkContainerMovies.asDatabaseMovies())
         }
@@ -37,12 +37,12 @@ class MoviesRepository(private val databaseMovies: MoviesDatabase) {
 
     fun getTrailerFromNetwork(movie: Movie): Completable {
 
-        return MoviesNetwork.retrofitService.getMovieVideosAsync(movie.id).flatMapCompletable {
+        return moviesApiService.getMovieVideosAsync(movie.id).flatMapCompletable {
                    fromCompletableTrailer(it)
         }
     }
 
-    fun fromCompletableTrailer(networkContainerVideos: NetworkContainerVideos): Completable{
+    private fun fromCompletableTrailer(networkContainerVideos: NetworkContainerVideos): Completable{
         return Completable.fromAction {
             databaseMovies.trailerDao.insertURL(networkContainerVideos.toMovieTrailerEntity())
         }

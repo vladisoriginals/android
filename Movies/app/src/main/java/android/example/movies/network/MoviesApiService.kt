@@ -28,14 +28,14 @@ interface MoviesApiService {
 
 
 
-object MoviesNetwork {
-private val retrofit = Retrofit.Builder()
+fun moviesNetwork(): MoviesApiService {
+ val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .addConverterFactory(MoshiConverterFactory.create())
     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
     .build()
 
-    val retrofitService: MoviesApiService =retrofit.create(MoviesApiService::class.java)
+    return retrofit.create(MoviesApiService::class.java)
 }
 
 

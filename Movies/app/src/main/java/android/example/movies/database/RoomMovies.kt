@@ -38,27 +38,15 @@ abstract class MoviesDatabase : RoomDatabase() {
     abstract val moviesDao: MoviesDao
     abstract val trailerDao: TrailerDao
 
-    companion object {
+}
 
-        @Volatile
-        private var INSTANCE: MoviesDatabase? = null
+fun getInstance(context: Context): MoviesDatabase {
 
-        fun getInstance(context: Context): MoviesDatabase {
-            synchronized(this) {
-                var instance = INSTANCE
-
-                if (instance == null) {
-                    instance = Room.databaseBuilder(
-                        context.applicationContext,
-                        MoviesDatabase::class.java,
-                        "movies.db"
-                    )
-                        .fallbackToDestructiveMigration()
-                        .build()
-                    INSTANCE = instance
-                }
-                return instance
-            }
-        }
-    }
+    return Room.databaseBuilder(
+        context.applicationContext,
+        MoviesDatabase::class.java,
+        "movies.db"
+    )
+        .fallbackToDestructiveMigration()
+        .build()
 }
