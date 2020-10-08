@@ -1,9 +1,10 @@
 package android.example.movies.details
 
-import android.app.Application
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
 import android.example.movies.repository.MoviesRepository
+import android.example.movies.usecase.GetTrailerFromNetworkUseCase
+import android.example.movies.usecase.GetTrailerUseCase
 import androidx.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -14,8 +15,9 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 
 class DetailsViewModel(
-    repository: MoviesRepository,
-    movie: Movie
+    movie: Movie,
+    getTrailerFromNetworkUseCase: GetTrailerFromNetworkUseCase,
+    getTrailerUseCase: GetTrailerUseCase
 ) : ViewModel() {
 
     private val _trailer = BehaviorSubject.create<Video>()
@@ -27,12 +29,12 @@ class DetailsViewModel(
     private val disposeBag = CompositeDisposable()
 
     init {
-        val disposeGetTrailer = repository.getTrailerFromNetwork(movie)
+        val disposeGetTrailer = getTrailerFromNetworkUseCase.execute(movie)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(onError = {_error.onNext(Unit)})
 
-        val disposeTrailer = repository.getTrailer(movie)
+        val disposeTrailer = getTrailerUseCase.execute(movie)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

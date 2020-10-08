@@ -5,18 +5,28 @@ import android.example.movies.details.DetailsViewModel
 import android.example.movies.domain.Movie
 import android.example.movies.network.moviesNetwork
 import android.example.movies.repository.MoviesRepository
+import android.example.movies.repository.MoviesRepositoryImpl
 import android.example.movies.search.SearchViewModel
+import android.example.movies.usecase.GetMovies
+import android.example.movies.usecase.GetTrailer
+import android.example.movies.usecase.GetTrailerFromNetwork
+import android.example.movies.usecase.RefreshMovies
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val moduleInfo = module {
 
-    viewModel { SearchViewModel( get()) }
-    viewModel { (movie: Movie) -> DetailsViewModel(get(), movie) }
+    viewModel { SearchViewModel(get<RefreshMovies>(), get<GetMovies>()) }
+    viewModel { (movie: Movie) -> DetailsViewModel(movie, get<GetTrailerFromNetwork>(), get<GetTrailer>()) }
 
     single { moviesNetwork() }
     single { getInstance(androidContext()) }
-    single { MoviesRepository(get(), get()) }
+    single<MoviesRepository> { MoviesRepositoryImpl(get(), get()) }
+
+    factory { GetMovies(get<MoviesRepository>()) }
+    factory { RefreshMovies(get<MoviesRepository>()) }
+    factory { GetTrailerFromNetwork(get<MoviesRepository>()) }
+    factory { GetTrailer(get<MoviesRepository>()) }
 
 }
