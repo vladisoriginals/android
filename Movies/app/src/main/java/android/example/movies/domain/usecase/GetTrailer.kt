@@ -1,8 +1,8 @@
-package android.example.movies.usecase
+package android.example.movies.domain.usecase
 
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
-import android.example.movies.repository.MoviesRepository
+import android.example.movies.domain.MoviesRepository
 import io.reactivex.Observable
 
 interface GetTrailerUseCase {

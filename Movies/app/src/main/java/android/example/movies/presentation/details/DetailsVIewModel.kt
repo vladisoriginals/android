@@ -1,10 +1,9 @@
-package android.example.movies.details
+package android.example.movies.presentation.details
 
 import android.example.movies.domain.Movie
 import android.example.movies.domain.Video
-import android.example.movies.repository.MoviesRepository
-import android.example.movies.usecase.GetTrailerFromNetworkUseCase
-import android.example.movies.usecase.GetTrailerUseCase
+import android.example.movies.domain.usecase.ProcessingRequestNetworkAndGetTrailerIntoDbUseCase
+import android.example.movies.domain.usecase.GetTrailerUseCase
 import androidx.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -16,7 +15,7 @@ import io.reactivex.subjects.PublishSubject
 
 class DetailsViewModel(
     movie: Movie,
-    getTrailerFromNetworkUseCase: GetTrailerFromNetworkUseCase,
+    processingRequestNetworkAndGetTrailerIntoDbUseCase: ProcessingRequestNetworkAndGetTrailerIntoDbUseCase,
     getTrailerUseCase: GetTrailerUseCase
 ) : ViewModel() {
 
@@ -29,17 +28,17 @@ class DetailsViewModel(
     private val disposeBag = CompositeDisposable()
 
     init {
-        val disposeGetTrailer = getTrailerFromNetworkUseCase.execute(movie)
+        val disposeGetTrailer = processingRequestNetworkAndGetTrailerIntoDbUseCase.execute(movie)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(onError = {_error.onNext(Unit)})
+            .subscribeBy(onError = { _error.onNext(Unit) })
 
         val disposeTrailer = getTrailerUseCase.execute(movie)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 _trailer.onNext(it)
-            },{
+            }, {
                 _error.onNext(Unit)
             })
         disposeBag.add(disposeGetTrailer)

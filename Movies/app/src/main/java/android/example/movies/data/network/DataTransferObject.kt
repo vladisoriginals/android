@@ -1,7 +1,7 @@
-package android.example.movies.network
+package android.example.movies.data.network
 
-import android.example.movies.database.DatabaseMovies
-import android.example.movies.database.DatabaseTrailer
+import android.example.movies.data.database.DatabaseMovies
+import android.example.movies.data.database.DatabaseTrailer
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -31,6 +31,7 @@ fun NetworkContainerMovies.asDatabaseMovies(): List<DatabaseMovies>{
     }
 
 }
+
 @JsonClass(generateAdapter = true)
 data class NetworkVideo(
     @Json(name = "key") val url: String
@@ -42,7 +43,6 @@ data class NetworkContainerVideos(
 
 fun NetworkContainerVideos.toMovieTrailerEntity(): DatabaseTrailer =
     DatabaseTrailer (id, "$TRAILER__BASE_URL${urls[0].url}")
-
 
 
 private const val POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342"

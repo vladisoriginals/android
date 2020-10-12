@@ -1,9 +1,6 @@
-package android.example.movies.network
+package android.example.movies.data.network
 
-import android.example.movies.domain.Movie
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import io.reactivex.Single
-import kotlinx.coroutines.Deferred
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -28,7 +25,7 @@ interface MoviesApiService {
 
 
 
-fun moviesNetwork(): MoviesApiService {
+fun getMoviesService(): MoviesApiService {
  val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .addConverterFactory(MoshiConverterFactory.create())

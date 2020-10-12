@@ -1,7 +1,6 @@
-package android.example.movies.database
+package android.example.movies.data.database
 
 import android.example.movies.domain.Movie
-import android.example.movies.domain.Video
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

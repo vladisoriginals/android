@@ -1,6 +1,6 @@
-package android.example.movies.usecase
+package android.example.movies.domain.usecase
 
-import android.example.movies.repository.MoviesRepository
+import android.example.movies.domain.MoviesRepository
 import io.reactivex.Completable
 
 interface RefreshMoviesUseCase {

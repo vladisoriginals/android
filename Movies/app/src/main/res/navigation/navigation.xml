@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/searchFragment"
-        android:name="android.example.movies.search.SearchFragment"
+        android:name="android.example.movies.presentation.search.SearchFragment"
         android:label="@string/movies"
         tools:layout="@layout/fragment_search">
         <action
@@ -17,7 +17,7 @@
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
-        android:name="android.example.movies.details.DetailsFragment"
+        android:name="android.example.movies.presentation.details.DetailsFragment"
         android:label="Details movie"
         tools:layout="@layout/fragment_details" >
         <argument

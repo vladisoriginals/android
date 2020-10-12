@@ -1,5 +1,6 @@
-package android.example.movies
+package android.example.movies.presentation
 
+import android.example.movies.R
 import android.example.movies.databinding.ActivityMainBinding
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
