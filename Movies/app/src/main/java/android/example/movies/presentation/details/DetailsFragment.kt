@@ -1,4 +1,4 @@
-package android.example.movies.details
+package android.example.movies.presentation.details
 
 import android.content.Intent
 import android.example.movies.databinding.FragmentDetailsBinding
@@ -18,21 +18,18 @@ import org.koin.core.parameter.parametersOf
 
 class DetailsFragment : Fragment() {
 
-
     private val disposeBag = CompositeDisposable()
     private lateinit var trailer: Video
     private val args: DetailsFragmentArgs by navArgs()
-    private val viewModelDetails: DetailsViewModel by viewModel{ parametersOf(args.movie)}
+    private val viewModelDetails: DetailsViewModel by viewModel { parametersOf(args.movie) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+
         val binding = FragmentDetailsBinding.inflate(inflater)
-
         val movie = args.movie
-
         val disposeTrailer = viewModelDetails.trailer
             .subscribe {
                 trailer = it
@@ -44,27 +41,22 @@ class DetailsFragment : Fragment() {
             tvDateDetails.text = movie.releaseDate
             tvOverviewDetails.text = movie.overview
             bTrailer.setOnClickListener {
-                    openMovieTrailer(trailer.url)
-                }
+                openMovieTrailer(trailer.url)
             }
+        }
 
-
-
-        val dispose = viewModelDetails.error.subscribe{
+        val dispose = viewModelDetails.error.subscribe {
             Toast.makeText(requireContext(), "Network error", Toast.LENGTH_LONG).show()
         }
-        disposeBag.add(dispose)
-        disposeBag.add(disposeTrailer)
+        disposeBag.addAll(dispose, disposeTrailer)
 
         return binding.root
     }
-
 
     private fun openMovieTrailer(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivity(intent)
     }
-
 
     override fun onDestroyView() {
         disposeBag.clear()

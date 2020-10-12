@@ -1,16 +1,15 @@
 package android.example.movies.di
 
-import android.example.movies.database.getInstance
-import android.example.movies.details.DetailsViewModel
+import android.example.movies.data.database.MoviesDatabase
+import android.example.movies.data.database.getDatabaseInstance
+import android.example.movies.presentation.details.DetailsViewModel
 import android.example.movies.domain.Movie
-import android.example.movies.network.moviesNetwork
-import android.example.movies.repository.MoviesRepository
-import android.example.movies.repository.MoviesRepositoryImpl
-import android.example.movies.search.SearchViewModel
-import android.example.movies.usecase.GetMovies
-import android.example.movies.usecase.GetTrailer
-import android.example.movies.usecase.GetTrailerFromNetwork
-import android.example.movies.usecase.RefreshMovies
+import android.example.movies.data.network.MoviesApiService
+import android.example.movies.data.network.getMoviesService
+import android.example.movies.domain.MoviesRepository
+import android.example.movies.data.repository.MoviesRepositoryImpl
+import android.example.movies.presentation.search.SearchViewModel
+import android.example.movies.domain.usecase.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -18,15 +17,15 @@ import org.koin.dsl.module
 val moduleInfo = module {
 
     viewModel { SearchViewModel(get<RefreshMovies>(), get<GetMovies>()) }
-    viewModel { (movie: Movie) -> DetailsViewModel(movie, get<GetTrailerFromNetwork>(), get<GetTrailer>()) }
+    viewModel { (movie: Movie) -> DetailsViewModel(movie, get<ProcessingRequestNetworkAndGetTrailerIntoDb>(), get<GetTrailer>()) }
 
-    single { moviesNetwork() }
-    single { getInstance(androidContext()) }
-    single<MoviesRepository> { MoviesRepositoryImpl(get(), get()) }
+    single<MoviesApiService> { getMoviesService() }
+    single<MoviesDatabase> { getDatabaseInstance(androidContext()) }
+    single<MoviesRepository> { MoviesRepositoryImpl(get<MoviesDatabase>(), get<MoviesApiService>()) }
 
-    factory { GetMovies(get<MoviesRepository>()) }
-    factory { RefreshMovies(get<MoviesRepository>()) }
-    factory { GetTrailerFromNetwork(get<MoviesRepository>()) }
-    factory { GetTrailer(get<MoviesRepository>()) }
+    factory<GetMovies> { GetMovies(get<MoviesRepository>()) }
+    factory<RefreshMovies> { RefreshMovies(get<MoviesRepository>()) }
+    factory<ProcessingRequestNetworkAndGetTrailerIntoDb> { ProcessingRequestNetworkAndGetTrailerIntoDb(get<MoviesRepository>()) }
+    factory<GetTrailer> { GetTrailer(get<MoviesRepository>()) }
 
 }

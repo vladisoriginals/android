@@ -1,8 +1,6 @@
-package android.example.movies.database
+package android.example.movies.data.database
 
 import android.content.Context
-import android.example.movies.domain.Video
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import io.reactivex.Observable
 
@@ -28,7 +26,6 @@ interface TrailerDao {
 
 }
 
-
 @Database(
     entities = [DatabaseMovies::class, DatabaseTrailer::class],
     version = 2,
@@ -40,7 +37,7 @@ abstract class MoviesDatabase : RoomDatabase() {
 
 }
 
-fun getInstance(context: Context): MoviesDatabase {
+fun getDatabaseInstance(context: Context): MoviesDatabase {
 
     return Room.databaseBuilder(
         context.applicationContext,
