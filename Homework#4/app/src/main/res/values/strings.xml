@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">Homework#4RecyclerView</string>
-    <string name="movie_backdrop">Movie Backdrop</string>
-    <string name="movie_poster">Movie poster</string>
-    <string name="released_details">Released:</string>
-    <string name="movie_trailer">movie trailer</string>
-    <string name="overview">Overview:</string>
-</resources>
